@@ -183,8 +183,8 @@ public class MediaBrowserFragment extends Fragment {
             }
         });
 
-        FloatingActionButton fab = (FloatingActionButton) rootView.findViewById(R.id.add_categorh_fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        FloatingActionButton addfab = (FloatingActionButton) rootView.findViewById(R.id.add_categorh_fab);
+        addfab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
             AlertDialog.Builder builder = new AlertDialog.Builder(MediaBrowserFragment.this.getContext());
@@ -217,7 +217,21 @@ public class MediaBrowserFragment extends Fragment {
         });
 
         if (!getMediaId().equals(MEDIA_ID_MUSICS_BY_GENRE)){
-            fab.setVisibility(View.INVISIBLE);
+            addfab.setVisibility(View.INVISIBLE);
+        }
+
+        FloatingActionButton homeFab = (FloatingActionButton) rootView.findViewById(R.id.home_fab);
+        homeFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getActivity(), MusicPlayerActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            }
+        });
+
+        if(getActivity().getClass() != SearchableActivity.class){
+            homeFab.setVisibility(View.INVISIBLE);
         }
 
         return rootView;

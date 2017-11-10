@@ -49,7 +49,7 @@ public class MusicProvider {
 
     private static final String TAG = LogHelper.makeLogTag(MusicProvider.class);
 
-    private MusicProviderSource mSource;
+    private static MusicProviderSource mSource;
 
     // Categorized caches for music track data:
     private static ConcurrentMap<String, List<MediaMetadataCompat>> mMusicListByGenre;
@@ -61,7 +61,7 @@ public class MusicProvider {
         NON_INITIALIZED, INITIALIZING, INITIALIZED
     }
 
-    private volatile State mCurrentState = State.NON_INITIALIZED;
+    private static volatile State mCurrentState = State.NON_INITIALIZED;
 
     public interface Callback {
         void onMusicCatalogReady(boolean success);
@@ -269,9 +269,9 @@ public class MusicProvider {
         mMusicListByGenre = newMusicListByGenre;
     }
 
-    private synchronized void retrieveMedia() {
+    public static synchronized void retrieveMedia() {
         try {
-            if (mCurrentState == State.NON_INITIALIZED) {
+//            if (mCurrentState == State.NON_INITIALIZED) { //Kangtle
                 mCurrentState = State.INITIALIZING;
 
                 Iterator<MediaMetadataCompat> tracks = mSource.iterator();
@@ -282,7 +282,7 @@ public class MusicProvider {
                 }
                 buildListsByGenre();
                 mCurrentState = State.INITIALIZED;
-            }
+//            }
         } finally {
             if (mCurrentState != State.INITIALIZED) {
                 // Something bad happened, so we reset state to NON_INITIALIZED to allow
@@ -291,7 +291,6 @@ public class MusicProvider {
             }
         }
     }
-
 
     public List<MediaBrowserCompat.MediaItem> getChildren(String mediaId, Resources resources) {
         List<MediaBrowserCompat.MediaItem> mediaItems = new ArrayList<>();

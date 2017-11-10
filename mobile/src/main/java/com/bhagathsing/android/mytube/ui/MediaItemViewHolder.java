@@ -119,6 +119,7 @@ public class MediaItemViewHolder {
                         String mediaId = MediaIDHelper.extractMusicIDFromMediaID(item.getMediaId());
                         MediaMetadataCompat metadata = MusicProvider.mMusicListById.get(mediaId).metadata;
                         MytubeSource.insertMusic(strCategory, metadata);
+                        MusicProvider.retrieveMedia();
                     }
                 });
                 builderSingle.show();
