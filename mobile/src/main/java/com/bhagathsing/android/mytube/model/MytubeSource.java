@@ -16,14 +16,32 @@
 
 package com.bhagathsing.android.mytube.model;
 
+import android.content.Context;
 import android.media.MediaMetadataRetriever;
+import android.media.MediaPlayer;
 import android.os.Environment;
 import android.support.v4.media.MediaMetadataCompat;
+import android.util.Log;
 
+import com.bhagathsing.android.mytube.MyApplication;
 import com.bhagathsing.android.mytube.ui.MusicPlayerActivity;
 import com.bhagathsing.android.mytube.utils.LogHelper;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -33,11 +51,13 @@ import java.util.Iterator;
  */
 public class MytubeSource implements MusicProviderSource {
 
-    private static final String TAG = LogHelper.makeLogTag(MytubeSource.class);
+    private static final String TAG = LogHelper.makeLogTag(RemoteJSONSource.class);
 
-    private static File ROOT_DIRECTORY;
+    protected static final String CATALOG_URL =
+            "http://storage.googleapis.com/automotive-media/music.json";
 
     private static final String JSON_MUSIC = "music";
+    private static final String JSON_CATEGORIES = "categories";
     private static final String JSON_TITLE = "title";
     private static final String JSON_ALBUM = "album";
     private static final String JSON_ARTIST = "artist";
@@ -47,64 +67,189 @@ public class MytubeSource implements MusicProviderSource {
     private static final String JSON_TRACK_NUMBER = "trackNumber";
     private static final String JSON_TOTAL_TRACK_COUNT = "totalTrackCount";
     private static final String JSON_DURATION = "duration";
+    private static File jsonFile = Environment.getExternalStoragePublicDirectory(MusicPlayerActivity.APP_NAME+"/musictube.json");
 
+    static {
+        jsonFile.getParentFile().mkdirs();
+    }
 
     @Override
     public Iterator<MediaMetadataCompat> iterator() {
-        ROOT_DIRECTORY = Environment.getExternalStoragePublicDirectory(MusicPlayerActivity.APP_NAME);
         ArrayList<MediaMetadataCompat> tracks = new ArrayList<>();
-        if (ROOT_DIRECTORY.canRead()){
-            for (File dirFile: ROOT_DIRECTORY.listFiles()){
-                if(dirFile.isDirectory()){
-                    for (File musicFile : dirFile.listFiles()){
-                        if (musicFile.isFile()){
-                            tracks.add(buildFromLocalFile(musicFile));
-                        }
+        try {
+            JSONObject jsonObj = readJSON();
+            if (jsonObj != null) {
+                JSONArray jsonTracks = jsonObj.getJSONArray(JSON_MUSIC);
+
+                if (jsonTracks != null) {
+                    for (int j = 0; j < jsonTracks.length(); j++) {
+                        tracks.add(buildFromJSON(jsonTracks.getJSONObject(j)));
                     }
                 }
             }
+        } catch (JSONException e) {
+            LogHelper.e(TAG, e, "Could not retrieve music list");
         }
         return tracks.iterator();
     }
 
     @Override
     public Iterable<String> categories() {
-        ROOT_DIRECTORY = Environment.getExternalStoragePublicDirectory(MusicPlayerActivity.APP_NAME);
-        ArrayList<String> categories = new ArrayList<>();
-        if (ROOT_DIRECTORY.canRead()) {
-            for (File dirFile : ROOT_DIRECTORY.listFiles()) {
-                if (dirFile.isDirectory()) {
-                    categories.add(dirFile.getName());
-                }
-            }
-        }
-        return categories;
+        return getCategories();
     }
 
-    private MediaMetadataCompat buildFromLocalFile(File file) {
-        File parentFile = file.getParentFile();
-        String filePath = file.getAbsolutePath();
-        String title = file.getName().replaceFirst("[.][^.]+$", "");
-        String album = parentFile.getName();
-        String artist = "unknown";
-        String genre = parentFile.getName();
-        String source = filePath;
-        String iconUrl = "android.resource://com.bhagathsing.android.mytube/drawable/ic_default_art.png";
-        MediaMetadataRetriever mmr = new MediaMetadataRetriever();
-        mmr.setDataSource(filePath);
-        String duration = mmr.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-        mmr.release();
+    private MediaMetadataCompat buildFromJSON(JSONObject json) throws JSONException {
+        String title = json.getString(JSON_TITLE);
+        String album = json.getString(JSON_ALBUM);
+        String genre = json.getString(JSON_GENRE);
+        String source = json.getString(JSON_SOURCE);
+        int duration = json.getInt(JSON_DURATION) * 1000; // ms
 
-        String id = String.valueOf(filePath.hashCode());
+        String id = String.valueOf(source.hashCode());
 
         return new MediaMetadataCompat.Builder()
                 .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, id)
                 .putString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE, source)
                 .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, album)
-                .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist)
-                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, Long.parseLong(duration))
+                .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
                 .putString(MediaMetadataCompat.METADATA_KEY_GENRE, genre)
                 .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
                 .build();
+    }
+
+    /**
+     * Download a JSON file from a server, parse the content and return the JSON
+     * object.
+     *
+     * @return result JSONObject containing the parsed representation.
+     */
+    private static JSONObject readJSON(){
+        String jsonStr = readFromFile();
+        try {
+            return new JSONObject(jsonStr);
+        } catch (JSONException e) {
+            LogHelper.e(TAG, e, "Could not retrieve music list");
+            return null;
+        } catch (Exception e) {
+            LogHelper.e(TAG, "Failed to parse the json for media list", e);
+            return null;
+        }
+    }
+
+    private static void writeJSON(JSONObject jsonObject) throws JSONException {
+        String jsonStr = jsonObject.toString();
+        writeToFile(jsonStr);
+    }
+
+    private static void writeToFile(String data) {
+        try {
+            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(new FileOutputStream(jsonFile));
+            outputStreamWriter.write(data);
+            outputStreamWriter.close();
+        }
+        catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+    }
+
+    private static String readFromFile() {
+
+        String ret = "";
+
+        try {
+            InputStream inputStream = new FileInputStream(jsonFile);
+            if ( inputStream != null ) {
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String receiveString = "";
+                StringBuilder stringBuilder = new StringBuilder();
+
+                while ( (receiveString = bufferedReader.readLine()) != null ) {
+                    stringBuilder.append(receiveString);
+                }
+
+                inputStream.close();
+                ret = stringBuilder.toString();
+            }
+        }
+        catch (FileNotFoundException e) {
+            Log.e("login activity", "File not found: " + e.toString());
+        } catch (IOException e) {
+            Log.e("login activity", "Can not read file: " + e.toString());
+        }
+
+        return ret;
+    }
+
+    public static ArrayList<String> getCategories(){
+        ArrayList<String> categories = new ArrayList<>();
+        try {
+            JSONObject jsonObj = readJSON();
+            if (jsonObj != null) {
+                if(jsonObj.has(JSON_CATEGORIES)){
+                    JSONArray jsonCategories = jsonObj.getJSONArray(JSON_CATEGORIES);
+                    for (int i=0;i<jsonCategories.length();i++){
+                        categories.add(jsonCategories.getString(i));
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            LogHelper.e(TAG, e, "Could not retrieve music list");
+        }
+
+        return categories;
+    }
+
+    public static void insertCategory(String category){
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = readJSON();
+            if (jsonObject == null) {
+                jsonObject = new JSONObject();
+            }
+            JSONArray categoriesArray = null;
+            if(jsonObject.has(JSON_CATEGORIES)){
+                categoriesArray = jsonObject.getJSONArray(JSON_CATEGORIES);
+            }else{
+                categoriesArray = new JSONArray();
+            }
+            categoriesArray.put(category);
+            jsonObject.put(JSON_CATEGORIES, categoriesArray);
+            writeJSON(jsonObject);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void insertMusic(String category, MediaMetadataCompat mediaMetadata){
+        JSONObject jsonMediaObject = new JSONObject();
+        try {
+            jsonMediaObject.put(JSON_TITLE, mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE));
+            jsonMediaObject.put(JSON_ALBUM, mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM));
+            jsonMediaObject.put(JSON_GENRE, mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_GENRE));
+            jsonMediaObject.put(JSON_SOURCE, mediaMetadata.getString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE));
+            jsonMediaObject.put(JSON_DURATION, mediaMetadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)/1000);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = readJSON();
+            if (jsonObject == null) {
+                jsonObject = new JSONObject();
+            }
+            JSONArray musicArray = null;
+            if(jsonObject.has(JSON_MUSIC)){
+                musicArray = jsonObject.getJSONArray(JSON_MUSIC);
+            }else{
+                musicArray = new JSONArray();
+            }
+            musicArray.put(jsonMediaObject);
+            jsonObject.put(JSON_MUSIC, musicArray);
+            writeJSON(jsonObject);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }

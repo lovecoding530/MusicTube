@@ -68,7 +68,7 @@ public class MusicProvider {
     }
 
     public MusicProvider() {
-        this(new RemoteJSONSource());
+        this(new MytubeSource());
     }
     public MusicProvider(MusicProviderSource source) {
         mSource = source;
@@ -304,7 +304,7 @@ public class MusicProvider {
             mediaItems.add(createBrowsableMediaItemForRoot(resources));
 
         } else if (MEDIA_ID_MUSICS_BY_GENRE.equals(mediaId)) {
-            for (String genre : getGenres()) { //getCategories
+            for (String genre : getCategories()) { //getCategories
                 mediaItems.add(createBrowsableMediaItemForGenre(genre, resources));
             }
 

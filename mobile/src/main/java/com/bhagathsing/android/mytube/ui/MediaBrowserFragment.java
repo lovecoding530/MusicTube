@@ -49,6 +49,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bhagathsing.android.mytube.R;
+import com.bhagathsing.android.mytube.model.MytubeSource;
 import com.bhagathsing.android.mytube.utils.ImageFilePath;
 import com.bhagathsing.android.mytube.utils.LogHelper;
 import com.bhagathsing.android.mytube.utils.MediaIDHelper;
@@ -198,6 +199,7 @@ public class MediaBrowserFragment extends Fragment {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     String category = input.getText().toString();
+                    MytubeSource.insertCategory(category);
                     mMediaFragmentListener.getMediaBrowser().unsubscribe(mMediaId);
                     mMediaFragmentListener.getMediaBrowser().subscribe(mMediaId, mSubscriptionCallback);
                 }

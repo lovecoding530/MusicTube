@@ -25,6 +25,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.MediaDescriptionCompat;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AlertDialog;
@@ -37,7 +38,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bhagathsing.android.mytube.R;
+import com.bhagathsing.android.mytube.model.MusicProvider;
+import com.bhagathsing.android.mytube.model.MutableMediaMetadata;
+import com.bhagathsing.android.mytube.model.MytubeSource;
 import com.bhagathsing.android.mytube.utils.MediaIDHelper;
+
+import java.util.concurrent.ConcurrentMap;
 
 public class MediaItemViewHolder {
 
@@ -57,7 +63,8 @@ public class MediaItemViewHolder {
 
     // Returns a view for use in media item list.
     static View setupListView(final Activity activity, View convertView, ViewGroup parent,
-                              MediaBrowserCompat.MediaItem item) {
+                              final MediaBrowserCompat.MediaItem item) {
+
         if (sColorStateNotPlaying == null || sColorStatePlaying == null) {
             initializeColorStateLists(activity);
         }
@@ -81,12 +88,10 @@ public class MediaItemViewHolder {
                     builderSingle.setIcon(R.drawable.ic_launcher);
                     builderSingle.setTitle("Select favorite.");
 
-                    final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(activity, R.layout.select_dialog_single_choice);
-                    arrayAdapter.add("Hardik");
-                    arrayAdapter.add("Archit");
-                    arrayAdapter.add("Jignesh");
-                    arrayAdapter.add("Umang");
-                    arrayAdapter.add("Gatti");
+                    final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+                                                                        activity,
+                                                                        R.layout.select_dialog_single_choice,
+                                                                        MytubeSource.getCategories());
 
                     builderSingle.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
                         @Override
@@ -98,8 +103,10 @@ public class MediaItemViewHolder {
                     builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            String strName = arrayAdapter.getItem(which);
-
+                            String strCategory = arrayAdapter.getItem(which);
+                            String mediaId = MediaIDHelper.extractMusicIDFromMediaID(item.getMediaId());
+                            MediaMetadataCompat metadata = MusicProvider.mMusicListById.get(mediaId).metadata;
+                            MytubeSource.insertMusic(strCategory, metadata);
                         }
                     });
                     builderSingle.show();
