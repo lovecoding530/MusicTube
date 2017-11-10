@@ -69,6 +69,10 @@ public class MytubeSource implements MusicProviderSource {
     private static final String JSON_DURATION = "duration";
     public static File jsonFile = Environment.getExternalStoragePublicDirectory(MusicPlayerActivity.APP_NAME+"/musictube.json");
 
+    static {
+        jsonFile.getParentFile().mkdirs();
+    }
+
     @Override
     public Iterator<MediaMetadataCompat> iterator() {
         ArrayList<MediaMetadataCompat> tracks = new ArrayList<>();

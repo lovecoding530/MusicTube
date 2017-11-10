@@ -470,7 +470,7 @@ public class SearchableActivity extends BaseActivity
                     R.animator.slide_in_from_right, R.animator.slide_out_to_left,
                     R.animator.slide_in_from_left, R.animator.slide_out_to_right);
             transaction.replace(R.id.container, fragment, FRAGMENT_TAG);
-            transaction.commit();
+            transaction.commitAllowingStateLoss();
         }
     }
 

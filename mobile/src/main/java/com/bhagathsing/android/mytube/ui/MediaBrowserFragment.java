@@ -199,6 +199,7 @@ public class MediaBrowserFragment extends Fragment {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     String category = input.getText().toString();
+                    if (category.isEmpty()) return;
                     MytubeSource.insertCategory(category);
                     mMediaFragmentListener.getMediaBrowser().unsubscribe(mMediaId);
                     mMediaFragmentListener.getMediaBrowser().subscribe(mMediaId, mSubscriptionCallback);

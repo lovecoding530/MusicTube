@@ -81,47 +81,49 @@ public class MediaItemViewHolder {
             holder.mTitleView = (TextView) convertView.findViewById(R.id.title);
 //            holder.mDescriptionView = (TextView) convertView.findViewById(R.id.description);
             holder.mFavButton = (ImageButton) convertView.findViewById(R.id.imageButton);
-            holder.mFavButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    AlertDialog.Builder builderSingle = new AlertDialog.Builder(activity);
-                    builderSingle.setIcon(R.drawable.ic_launcher);
-                    builderSingle.setTitle("Select favorite.");
-
-                    final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-                                                                        activity,
-                                                                        R.layout.select_dialog_single_choice,
-                                                                        MytubeSource.getCategories());
-
-                    builderSingle.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-
-                    builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            String strCategory = arrayAdapter.getItem(which);
-                            String mediaId = MediaIDHelper.extractMusicIDFromMediaID(item.getMediaId());
-                            MediaMetadataCompat metadata = MusicProvider.mMusicListById.get(mediaId).metadata;
-                            MytubeSource.insertMusic(strCategory, metadata);
-                        }
-                    });
-                    builderSingle.show();
-                }
-            });
             convertView.setTag(holder);
         } else {
             holder = (MediaItemViewHolder) convertView.getTag();
             cachedState = (Integer) convertView.getTag(R.id.tag_mediaitem_state_cache);
         }
 
+
+
         MediaDescriptionCompat description = item.getDescription();
         holder.mTitleView.setText(description.getTitle());
 //        holder.mDescriptionView.setText(description.getSubtitle());
 
+        holder.mFavButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder builderSingle = new AlertDialog.Builder(activity);
+                builderSingle.setIcon(R.drawable.ic_launcher);
+                builderSingle.setTitle("Select favorite.");
+
+                final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
+                        activity,
+                        R.layout.select_dialog_single_choice,
+                        MytubeSource.getCategories());
+
+                builderSingle.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String strCategory = arrayAdapter.getItem(which);
+                        String mediaId = MediaIDHelper.extractMusicIDFromMediaID(item.getMediaId());
+                        MediaMetadataCompat metadata = MusicProvider.mMusicListById.get(mediaId).metadata;
+                        MytubeSource.insertMusic(strCategory, metadata);
+                    }
+                });
+                builderSingle.show();
+            }
+        });
         // If the state of convertView is different, we need to adapt the view to the
         // new state.
         int state = getMediaItemState(activity, item);
