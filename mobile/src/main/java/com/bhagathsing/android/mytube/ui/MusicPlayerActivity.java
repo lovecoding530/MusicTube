@@ -33,6 +33,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.bhagathsing.android.mytube.R;
+import com.bhagathsing.android.mytube.model.MytubeSource;
 import com.bhagathsing.android.mytube.utils.LogHelper;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -102,6 +103,16 @@ public class MusicPlayerActivity extends BaseActivity
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
                 return;
             }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults[0] != -1){
+            MytubeSource.jsonFile.getParentFile().mkdirs();
+            super.mMediaBrowser.disconnect();
+            super.mMediaBrowser.connect();
         }
     }
 

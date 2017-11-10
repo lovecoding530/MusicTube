@@ -67,11 +67,7 @@ public class MytubeSource implements MusicProviderSource {
     private static final String JSON_TRACK_NUMBER = "trackNumber";
     private static final String JSON_TOTAL_TRACK_COUNT = "totalTrackCount";
     private static final String JSON_DURATION = "duration";
-    private static File jsonFile = Environment.getExternalStoragePublicDirectory(MusicPlayerActivity.APP_NAME+"/musictube.json");
-
-    static {
-        jsonFile.getParentFile().mkdirs();
-    }
+    public static File jsonFile = Environment.getExternalStoragePublicDirectory(MusicPlayerActivity.APP_NAME+"/musictube.json");
 
     @Override
     public Iterator<MediaMetadataCompat> iterator() {
@@ -226,7 +222,7 @@ public class MytubeSource implements MusicProviderSource {
         try {
             jsonMediaObject.put(JSON_TITLE, mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE));
             jsonMediaObject.put(JSON_ALBUM, mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM));
-            jsonMediaObject.put(JSON_GENRE, mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_GENRE));
+            jsonMediaObject.put(JSON_GENRE, category);
             jsonMediaObject.put(JSON_SOURCE, mediaMetadata.getString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE));
             jsonMediaObject.put(JSON_DURATION, mediaMetadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)/1000);
         } catch (JSONException e) {
