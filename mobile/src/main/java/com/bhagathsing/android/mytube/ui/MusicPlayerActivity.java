@@ -93,6 +93,16 @@ public class MusicPlayerActivity extends BaseActivity
         if (savedInstanceState == null) {
             startFullScreenActivityIfNeeded(getIntent());
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                Log.e("Permission grant","You have permission");
+            }else{
+                Log.e("Permission error","You have asked for permission");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return;
+            }
+        }
     }
 
     @Override
