@@ -26,5 +26,6 @@
                 <item name="android:windowTranslucentStatus">true</item>
                 <item name="android:windowContentTransitions">true</item>
                 <item name="autoCompleteTextViewStyle">@style/cursorColor</item>
+                <item name="android:actionButtonStyle">@style/ActionButtonStyle</item>
         </style>
 </resources>

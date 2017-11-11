@@ -55,6 +55,7 @@
         android:layout_gravity="bottom|start"
         android:layout_margin="16dp"
         android:src="@drawable/home_white"
+        android:visibility="invisible"
         app:layout_anchorGravity="bottom|left" />
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/add_categorh_fab"

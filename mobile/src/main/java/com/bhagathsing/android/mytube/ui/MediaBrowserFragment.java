@@ -228,6 +228,7 @@ public class MediaBrowserFragment extends Fragment {
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
             }
+
         });
 
         if(getActivity().getClass() != SearchableActivity.class){

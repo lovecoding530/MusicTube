@@ -98,6 +98,7 @@ public class SearchableActivity extends BaseActivity
 
         setContentView(R.layout.activity_searchable);
         initializeToolbar();
+        showHomeButton();
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }

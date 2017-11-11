@@ -37,6 +37,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 
 import com.bhagathsing.android.mytube.R;
 import com.bhagathsing.android.mytube.utils.LogHelper;
@@ -301,6 +302,20 @@ public abstract class ActionBarCastActivity extends AppCompatActivity {
         }
 
         mToolbarInitialized = true;
+    }
+
+    protected void showHomeButton(){
+        ImageButton homeButton = (ImageButton) findViewById(R.id.home_button);
+        homeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(ActionBarCastActivity.this, MusicPlayerActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+            }
+
+        });
+        homeButton.setVisibility(View.VISIBLE);
     }
 
     private void populateDrawerItems(NavigationView navigationView) {
