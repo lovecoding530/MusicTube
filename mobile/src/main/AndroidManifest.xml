@@ -158,6 +158,7 @@
                 android:value="com.bhagathsing.android.mytube.ui.MusicPlayerActivity"/>
         </activity>
         <activity android:name="com.bhagathsing.android.mytube.ui.SearchableActivity"
+                  android:windowSoftInputMode="adjustNothing"
                   android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
