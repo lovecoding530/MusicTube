@@ -29,7 +29,9 @@ import com.bhagathsing.android.mytube.utils.LogHelper;
 import com.bhagathsing.android.mytube.utils.MediaIDHelper;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -257,7 +259,18 @@ public class MusicProvider {
     public static synchronized void buildListsByGenre() {
         ConcurrentMap<String, List<MediaMetadataCompat>> newMusicListByGenre = new ConcurrentHashMap<>();
 
-        for (MutableMediaMetadata m : mMusicListById.values()) {
+        //Kangtle alpha
+        ArrayList<MutableMediaMetadata> values = new ArrayList(mMusicListById.values());
+        Collections.sort(values, new Comparator<MutableMediaMetadata>() {
+            @Override
+            public int compare(MutableMediaMetadata o1, MutableMediaMetadata o2) {
+                String title1 = o1.metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
+                String title2 = o2.metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
+                return title1.compareToIgnoreCase(title2);
+            }
+        });
+
+        for (MutableMediaMetadata m : values) {
             String genre = m.metadata.getString(MediaMetadataCompat.METADATA_KEY_GENRE);
             List<MediaMetadataCompat> list = newMusicListByGenre.get(genre);
             if (list == null) {

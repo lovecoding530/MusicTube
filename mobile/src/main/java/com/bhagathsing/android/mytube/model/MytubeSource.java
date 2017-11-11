@@ -43,6 +43,8 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 
 /**
@@ -90,6 +92,16 @@ public class MytubeSource implements MusicProviderSource {
         } catch (JSONException e) {
             LogHelper.e(TAG, e, "Could not retrieve music list");
         }
+
+        Collections.sort(tracks, new Comparator<MediaMetadataCompat>() {
+            @Override
+            public int compare(MediaMetadataCompat o1, MediaMetadataCompat o2) {
+                String title1 = o1.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
+                String title2 = o2.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
+                return title1.compareToIgnoreCase(title2);
+            }
+        });
+
         return tracks.iterator();
     }
 
