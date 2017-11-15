@@ -54,7 +54,7 @@ public class MusicProvider {
     private static MusicProviderSource mSource;
 
     // Categorized caches for music track data:
-    private static ConcurrentMap<String, List<MediaMetadataCompat>> mMusicListByGenre;
+    public static ConcurrentMap<String, List<MediaMetadataCompat>> mMusicListByGenre;
     public static ConcurrentMap<String, MutableMediaMetadata> mMusicListById;
 
     private final Set<String> mFavoriteTracks;
@@ -73,9 +73,12 @@ public class MusicProvider {
         this(new MytubeSource());
     }
     public MusicProvider(MusicProviderSource source) {
+        mCurrentState = State.NON_INITIALIZED;
         mSource = source;
-        mMusicListByGenre = new ConcurrentHashMap<>();
-        mMusicListById = new ConcurrentHashMap<>();
+        if(mMusicListByGenre == null)
+            mMusicListByGenre = new ConcurrentHashMap<>();
+        if(mMusicListById == null)
+            mMusicListById = new ConcurrentHashMap<>();
         mFavoriteTracks = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     }
 
@@ -243,7 +246,7 @@ public class MusicProvider {
         new AsyncTask<Void, Void, State>() {
             @Override
             protected State doInBackground(Void... params) {
-                retrieveMedia();
+                retrieveMedia(false);
                 return mCurrentState;
             }
 
@@ -282,11 +285,11 @@ public class MusicProvider {
         mMusicListByGenre = newMusicListByGenre;
     }
 
-    public static synchronized void retrieveMedia() {
+    public static synchronized void retrieveMedia(boolean clear) {
         try {
 //            if (mCurrentState == State.NON_INITIALIZED) { //Kangtle
                 mCurrentState = State.INITIALIZING;
-
+                if (clear) mMusicListById.clear();
                 Iterator<MediaMetadataCompat> tracks = mSource.iterator();
                 while (tracks.hasNext()) {
                     MediaMetadataCompat item = tracks.next();

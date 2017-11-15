@@ -38,7 +38,9 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -49,6 +51,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bhagathsing.android.mytube.R;
+import com.bhagathsing.android.mytube.model.MusicProvider;
 import com.bhagathsing.android.mytube.model.MytubeSource;
 import com.bhagathsing.android.mytube.utils.ImageFilePath;
 import com.bhagathsing.android.mytube.utils.LogHelper;
@@ -132,7 +135,7 @@ public class MediaBrowserFragment extends Fragment {
             public void onChildrenLoaded(@NonNull String parentId,
                                          @NonNull List<MediaBrowserCompat.MediaItem> children) {
                 try {
-                    LogHelper.d(TAG, "fragment onChildrenLoaded, parentId=" + parentId +
+                    LogHelper.d("Kangtle", "fragment onChildrenLoaded, parentId=" + parentId +
                         "  count=" + children.size());
 //                    checkForUserVisibleErrors(children.isEmpty());
                     mBrowserAdapter.clear();
@@ -218,6 +221,8 @@ public class MediaBrowserFragment extends Fragment {
 
         if (!getMediaId().equals(MEDIA_ID_MUSICS_BY_GENRE)){
             addfab.setVisibility(View.INVISIBLE);
+            if (!getMediaId().contains(MusicPlayerActivity.NEW_RECENTLY_SONGS))
+                registerForContextMenu(listView);
         }
 
         FloatingActionButton homeFab = (FloatingActionButton) rootView.findViewById(R.id.home_fab);
@@ -236,6 +241,31 @@ public class MediaBrowserFragment extends Fragment {
         }
 
         return rootView;
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        if (v.getId()==R.id.list_view) {
+            menu.add("Delete");
+        }
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        super.onContextItemSelected(item);
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)item.getMenuInfo();
+        MediaBrowserCompat.MediaItem mediaItem = mBrowserAdapter.getItem(info.position);
+        if(item.getTitle().equals("Delete")){
+            Log.d("Kangtle", (String) mediaItem.getDescription().getTitle());
+            String mediaId = MediaIDHelper.extractMusicIDFromMediaID(mediaItem.getMediaId());
+            MediaMetadataCompat metadata = MusicProvider.mMusicListById.get(mediaId).metadata;
+            MytubeSource.deleteMusic(metadata);
+        }
+        MusicProvider.retrieveMedia(true);
+        mMediaFragmentListener.getMediaBrowser().unsubscribe(mMediaId);
+        mMediaFragmentListener.getMediaBrowser().subscribe(mMediaId, mSubscriptionCallback);
+        return true;
     }
 
     @Override

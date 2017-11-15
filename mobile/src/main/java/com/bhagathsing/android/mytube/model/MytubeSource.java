@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Utility class to get a list of MusicTrack's based on a server-side JSON
@@ -117,7 +118,7 @@ public class MytubeSource implements MusicProviderSource {
         String source = json.getString(JSON_SOURCE);
         int duration = json.getInt(JSON_DURATION) * 1000; // ms
 
-        String id = String.valueOf(source.hashCode());
+        String id = String.valueOf((genre+source).hashCode());
 
         return new MediaMetadataCompat.Builder()
                 .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, id)
@@ -259,6 +260,53 @@ public class MytubeSource implements MusicProviderSource {
             }
             musicArray.put(jsonMediaObject);
             jsonObject.put(JSON_MUSIC, musicArray);
+            writeJSON(jsonObject);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        String musicId = mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID);
+
+        if(!MusicProvider.mMusicListById.containsKey(musicId)){
+            MusicProvider.mMusicListById.put(musicId, new MutableMediaMetadata(musicId, mediaMetadata));
+            List<MediaMetadataCompat> list = MusicProvider.mMusicListByGenre.get(category);
+            if (list == null) {
+                list = new ArrayList<>();
+                MusicProvider.mMusicListByGenre.put(category, list);
+            }
+            list.add(0, mediaMetadata);
+        }
+    }
+
+    public static void deleteMusic(MediaMetadataCompat mediaMetadata){
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = readJSON();
+            if (jsonObject == null) {
+                jsonObject = new JSONObject();
+            }
+            JSONArray musicArray = null;
+            if(jsonObject.has(JSON_MUSIC)){
+                musicArray = jsonObject.getJSONArray(JSON_MUSIC);
+            }else{
+                musicArray = new JSONArray();
+            }
+
+            JSONArray newMusicList = new JSONArray();
+            int len = musicArray.length();
+            for (int i=0;i<len;i++)
+            {
+                JSONObject temp = musicArray.getJSONObject(i);
+                String tempSource = temp.getString(JSON_SOURCE);
+                String deletedSource = mediaMetadata.getString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE);
+                //Excluding the item at position
+                if (!tempSource.equals(deletedSource))
+                {
+                    newMusicList.put(musicArray.get(i));
+                }
+            }
+
+            jsonObject.put(JSON_MUSIC, newMusicList);
             writeJSON(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();

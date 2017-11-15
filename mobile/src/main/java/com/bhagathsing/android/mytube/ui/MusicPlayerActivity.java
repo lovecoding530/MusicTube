@@ -28,17 +28,23 @@ import android.support.annotation.NonNull;
 import android.support.multidex.MultiDex;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.bhagathsing.android.mytube.R;
+import com.bhagathsing.android.mytube.model.MusicProvider;
+import com.bhagathsing.android.mytube.model.MutableMediaMetadata;
 import com.bhagathsing.android.mytube.model.MytubeSource;
+import com.bhagathsing.android.mytube.model.YoutubeAPIActivity;
 import com.bhagathsing.android.mytube.utils.LogHelper;
+import com.bhagathsing.android.mytube.utils.MediaIDHelper;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static com.bhagathsing.android.mytube.utils.MediaIDHelper.MEDIA_ID_MUSICS_BY_GENRE;
 
@@ -67,6 +73,7 @@ public class MusicPlayerActivity extends BaseActivity
     public static final String EXTRA_CURRENT_MEDIA_DESCRIPTION =
         "com.bhagathsing.android.mytube.CURRENT_MEDIA_DESCRIPTION";
 
+    public static String NEW_RECENTLY_SONGS = "New and recently played songs";
     public static String selectedCategory = "";
     public static ArrayList<SearchableActivity> searchableActivities;
 
@@ -111,6 +118,8 @@ public class MusicPlayerActivity extends BaseActivity
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (grantResults[0] != -1){
             MytubeSource.jsonFile.getParentFile().mkdirs();
+            MytubeSource.insertCategory(NEW_RECENTLY_SONGS);
+            MytubeSource.insertCategory("My favorite");
             super.mMediaBrowser.disconnect();
             super.mMediaBrowser.connect();
         }
@@ -127,15 +136,57 @@ public class MusicPlayerActivity extends BaseActivity
 
     @Override
     public void onMediaItemSelected(MediaBrowserCompat.MediaItem item) {
-        LogHelper.d(TAG, "onMediaItemSelected, mediaId=" + item.getMediaId());
-        if (item.isPlayable()) {
-            MediaControllerCompat.getMediaController(MusicPlayerActivity.this).getTransportControls()
-                    .playFromMediaId(item.getMediaId(), null);
-        } else if (item.isBrowsable()) {
-            navigateToBrowser(item.getMediaId());
-        } else {
-            LogHelper.w(TAG, "Ignoring MediaItem that is neither browsable nor playable: ",
-                    "mediaId=", item.getMediaId());
+        Log.d("Kangtle", "onMediaItemSelected, mediaId=" + item.getMediaId());
+
+        if(item.getDescription().getTitle().equals(NEW_RECENTLY_SONGS)){
+            if(MusicProvider.mMusicListByGenre.containsKey(NEW_RECENTLY_SONGS) &&
+                    MusicProvider.mMusicListByGenre.get(NEW_RECENTLY_SONGS).size() >= YoutubeAPIActivity.SEARCH_MAX_RESULTS_NUM){
+                String mediaId = "__BY_GENRE__/" + NEW_RECENTLY_SONGS;
+                navigateToBrowser(mediaId);
+            }else{
+                Intent youtubeAPIIntent = new Intent(this, YoutubeAPIActivity.class);
+                youtubeAPIIntent.putExtra("query", "New Songs");
+                youtubeAPIIntent.putExtra("genre", NEW_RECENTLY_SONGS);
+                startActivityForResult(youtubeAPIIntent, 0);
+            }
+        }else{
+
+            if (item.isPlayable()) {
+                MediaControllerCompat.getMediaController(MusicPlayerActivity.this).getTransportControls()
+                        .playFromMediaId(item.getMediaId(), null);
+                String mediaId = MediaIDHelper.extractMusicIDFromMediaID(item.getMediaId());
+                MediaMetadataCompat metadata = MusicProvider.mMusicListById.get(mediaId).metadata;
+                MytubeSource.insertMusic(NEW_RECENTLY_SONGS, metadata);
+            } else if (item.isBrowsable()) {
+                navigateToBrowser(item.getMediaId());
+            } else {
+                LogHelper.w(TAG, "Ignoring MediaItem that is neither browsable nor playable: ",
+                        "mediaId=", item.getMediaId());
+            }
+
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == 1){
+            Log.d("Kangtle", String.valueOf(resultCode));
+            MusicProvider.mMusicListById.putAll(YoutubeAPIActivity.searchResults);
+            List<MediaMetadataCompat> list = MusicProvider.mMusicListByGenre.get(NEW_RECENTLY_SONGS);
+            if (list == null) {
+                list = new ArrayList<>();
+                MusicProvider.mMusicListByGenre.put(NEW_RECENTLY_SONGS, list);
+            }
+            for (MutableMediaMetadata m: YoutubeAPIActivity.searchResults.values()){
+                if(!list.contains(m.metadata))
+                    list.add(m.metadata);
+            }
+            String mediaId = "__BY_GENRE__/" + NEW_RECENTLY_SONGS;
+            navigateToBrowser(mediaId);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            }
         }
     }
 

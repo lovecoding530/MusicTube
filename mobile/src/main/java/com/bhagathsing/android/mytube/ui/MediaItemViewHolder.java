@@ -43,6 +43,8 @@ import com.bhagathsing.android.mytube.model.MutableMediaMetadata;
 import com.bhagathsing.android.mytube.model.MytubeSource;
 import com.bhagathsing.android.mytube.utils.MediaIDHelper;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentMap;
 
 public class MediaItemViewHolder {
@@ -100,10 +102,13 @@ public class MediaItemViewHolder {
                 builderSingle.setIcon(R.drawable.ic_launcher);
                 builderSingle.setTitle("Select favorite.");
 
+                ArrayList<String> categories = MytubeSource.getCategories();
+                categories.remove(0);
+
                 final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
                         activity,
                         R.layout.select_dialog_single_choice,
-                        MytubeSource.getCategories());
+                        categories);
 
                 builderSingle.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
                     @Override
@@ -119,7 +124,6 @@ public class MediaItemViewHolder {
                         String mediaId = MediaIDHelper.extractMusicIDFromMediaID(item.getMediaId());
                         MediaMetadataCompat metadata = MusicProvider.mMusicListById.get(mediaId).metadata;
                         MytubeSource.insertMusic(strCategory, metadata);
-                        MusicProvider.retrieveMedia();
                     }
                 });
                 builderSingle.show();
@@ -129,10 +133,20 @@ public class MediaItemViewHolder {
         // new state.
         int state = getMediaItemState(activity, item);
         if (cachedState == null || cachedState != state) {
-            Drawable drawable = getDrawableByState(activity, state);
+            final Drawable drawable = getDrawableByState(activity, state);
             if (drawable != null) {
                 holder.mImageView.setImageDrawable(drawable);
                 holder.mImageView.setVisibility(View.VISIBLE);
+
+                if (drawable.getClass() == AnimationDrawable.class){
+                    holder.mImageView.post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            ((AnimationDrawable)drawable).start();
+                        }
+                    });
+                }
             }
             else {
 //                holder.mImageView.setVisibility(View.GONE);
@@ -170,13 +184,18 @@ public class MediaItemViewHolder {
                 AnimationDrawable animation = (AnimationDrawable)
                         ContextCompat.getDrawable(context, R.drawable.ic_equalizer_white_36dp);
                 DrawableCompat.setTintList(animation, sColorStatePlaying);
-                animation.start();
+//                animation.start();
                 return animation;
             case STATE_PAUSED:
                 Drawable playDrawable = ContextCompat.getDrawable(context,
                         R.drawable.ic_equalizer1_white_36dp);
                 DrawableCompat.setTintList(playDrawable, sColorStatePlaying);
-                return playDrawable;
+
+                AnimationDrawable loadingAnimation = (AnimationDrawable)
+                        ContextCompat.getDrawable(context, R.drawable.loading);
+                DrawableCompat.setTintList(loadingAnimation, sColorStatePlaying);
+//                loadingAnimation.start();
+                return loadingAnimation;
             default:
                 return null;
         }
