@@ -178,6 +178,19 @@ public class MusicProvider {
         return result;
     }
 
+    //kangtle
+    public static MediaMetadataCompat searchMusicInCategory(String category, String source){
+        if (mCurrentState != State.INITIALIZED) {
+            return null;
+        }
+        MediaMetadataCompat result = null;
+        for (MediaMetadataCompat track : mMusicListByGenre.get(category)) {
+            if (track.getString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE).equals(source)) {
+                result = track;
+            }
+        }
+        return result;
+    }
 
     /**
      * Return the MediaMetadataCompat for the given musicID.

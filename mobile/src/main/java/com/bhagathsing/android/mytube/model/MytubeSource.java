@@ -235,39 +235,39 @@ public class MytubeSource implements MusicProviderSource {
     }
 
     public static void insertMusic(String category, MediaMetadataCompat mediaMetadata){
-        JSONObject jsonMediaObject = new JSONObject();
-        try {
-            jsonMediaObject.put(JSON_TITLE, mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE));
-            jsonMediaObject.put(JSON_ALBUM, mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM));
-            jsonMediaObject.put(JSON_GENRE, category);
-            jsonMediaObject.put(JSON_SOURCE, mediaMetadata.getString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE));
-            jsonMediaObject.put(JSON_DURATION, mediaMetadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)/1000);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        JSONObject jsonObject = null;
-        try {
-            jsonObject = readJSON();
-            if (jsonObject == null) {
-                jsonObject = new JSONObject();
+        String source = mediaMetadata.getString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE);
+        if(MusicProvider.searchMusicInCategory(category, source) == null){
+            JSONObject jsonMediaObject = new JSONObject();
+            try {
+                jsonMediaObject.put(JSON_TITLE, mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE));
+                jsonMediaObject.put(JSON_ALBUM, mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM));
+                jsonMediaObject.put(JSON_GENRE, category);
+                jsonMediaObject.put(JSON_SOURCE, mediaMetadata.getString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE));
+                jsonMediaObject.put(JSON_DURATION, mediaMetadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)/1000);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-            JSONArray musicArray = null;
-            if(jsonObject.has(JSON_MUSIC)){
-                musicArray = jsonObject.getJSONArray(JSON_MUSIC);
-            }else{
-                musicArray = new JSONArray();
+
+            JSONObject jsonObject = null;
+            try {
+                jsonObject = readJSON();
+                if (jsonObject == null) {
+                    jsonObject = new JSONObject();
+                }
+                JSONArray musicArray = null;
+                if(jsonObject.has(JSON_MUSIC)){
+                    musicArray = jsonObject.getJSONArray(JSON_MUSIC);
+                }else{
+                    musicArray = new JSONArray();
+                }
+                musicArray.put(jsonMediaObject);
+                jsonObject.put(JSON_MUSIC, musicArray);
+                writeJSON(jsonObject);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-            musicArray.put(jsonMediaObject);
-            jsonObject.put(JSON_MUSIC, musicArray);
-            writeJSON(jsonObject);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
-        String musicId = mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID);
-
-        if(!MusicProvider.mMusicListById.containsKey(musicId)){
+            String musicId = mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID);
             MusicProvider.mMusicListById.put(musicId, new MutableMediaMetadata(musicId, mediaMetadata));
             List<MediaMetadataCompat> list = MusicProvider.mMusicListByGenre.get(category);
             if (list == null) {

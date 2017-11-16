@@ -59,7 +59,16 @@ public class SearchableActivity extends BaseActivity
         if(resultCode == 1){
             Log.d("Kangtle", String.valueOf(resultCode));
             MusicProvider.mMusicListById.putAll(YoutubeAPIActivity.searchResults);
-            MusicProvider.buildListsByGenre();
+            String category = "Search_" + query;
+            List<MediaMetadataCompat> list = MusicProvider.mMusicListByGenre.get(category);
+            if (list == null) {
+                list = new ArrayList<>();
+                MusicProvider.mMusicListByGenre.put(category, list);
+            }
+            for (MutableMediaMetadata m: YoutubeAPIActivity.searchResults.values()){
+                if(!list.contains(m.metadata))
+                    list.add(m.metadata);
+            }
             String mediaId = "__BY_GENRE__/Search_" + query;
             navigateToBrowser(mediaId);
         }
