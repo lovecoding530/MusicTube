@@ -221,9 +221,10 @@ public class MediaBrowserFragment extends Fragment {
 
         if (!getMediaId().equals(MEDIA_ID_MUSICS_BY_GENRE)){
             addfab.setVisibility(View.INVISIBLE);
-            if (!getMediaId().contains(MusicPlayerActivity.NEW_RECENTLY_SONGS))
-                registerForContextMenu(listView);
         }
+        if (getActivity().getClass() != SearchableActivity.class &&
+                !getMediaId().contains(MusicPlayerActivity.NEW_RECENTLY_SONGS))
+            registerForContextMenu(listView);
 
         FloatingActionButton homeFab = (FloatingActionButton) rootView.findViewById(R.id.home_fab);
         homeFab.setOnClickListener(new View.OnClickListener() {
@@ -247,6 +248,8 @@ public class MediaBrowserFragment extends Fragment {
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
         if (v.getId()==R.id.list_view) {
+            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+            if(getMediaId().equals(MEDIA_ID_MUSICS_BY_GENRE) && info.position < 2) return;
             menu.add("Delete");
         }
     }
@@ -258,9 +261,14 @@ public class MediaBrowserFragment extends Fragment {
         MediaBrowserCompat.MediaItem mediaItem = mBrowserAdapter.getItem(info.position);
         if(item.getTitle().equals("Delete")){
             Log.d("Kangtle", (String) mediaItem.getDescription().getTitle());
-            String mediaId = MediaIDHelper.extractMusicIDFromMediaID(mediaItem.getMediaId());
-            MediaMetadataCompat metadata = MusicProvider.mMusicListById.get(mediaId).metadata;
-            MytubeSource.deleteMusic(metadata);
+            if (getMediaId().equals(MEDIA_ID_MUSICS_BY_GENRE)){
+                String category = (String) mediaItem.getDescription().getTitle();
+                MytubeSource.deleteCategory(category);
+            }else{
+                String mediaId = MediaIDHelper.extractMusicIDFromMediaID(mediaItem.getMediaId());
+                MediaMetadataCompat metadata = MusicProvider.mMusicListById.get(mediaId).metadata;
+                MytubeSource.deleteMusic(metadata);
+            }
         }
         MusicProvider.retrieveMedia(true);
         mMediaFragmentListener.getMediaBrowser().unsubscribe(mMediaId);

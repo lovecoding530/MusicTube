@@ -74,6 +74,7 @@ public class MusicPlayerActivity extends BaseActivity
         "com.bhagathsing.android.mytube.CURRENT_MEDIA_DESCRIPTION";
 
     public static String NEW_RECENTLY_SONGS = "New and recently played songs";
+    public static String My_FAVORITE = "My favorite";
     public static String selectedCategory = "";
     public static ArrayList<SearchableActivity> searchableActivities;
 
@@ -119,7 +120,7 @@ public class MusicPlayerActivity extends BaseActivity
         if (grantResults[0] != -1){
             MytubeSource.jsonFile.getParentFile().mkdirs();
             MytubeSource.insertCategory(NEW_RECENTLY_SONGS);
-            MytubeSource.insertCategory("My favorite");
+            MytubeSource.insertCategory(My_FAVORITE);
             super.mMediaBrowser.disconnect();
             super.mMediaBrowser.connect();
         }

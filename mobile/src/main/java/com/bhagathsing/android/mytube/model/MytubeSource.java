@@ -226,9 +226,11 @@ public class MytubeSource implements MusicProviderSource {
             }else{
                 categoriesArray = new JSONArray();
             }
-            categoriesArray.put(category);
-            jsonObject.put(JSON_CATEGORIES, categoriesArray);
-            writeJSON(jsonObject);
+            if(!categoriesArray.toString().contains(category)){
+                categoriesArray.put(category);
+                jsonObject.put(JSON_CATEGORIES, categoriesArray);
+                writeJSON(jsonObject);
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -278,36 +280,76 @@ public class MytubeSource implements MusicProviderSource {
         }
     }
 
+    public static void deleteCategory(String category){
+        JSONObject jsonObject = null;
+        try {
+            jsonObject = readJSON();
+            if (jsonObject != null) {
+                JSONArray categoryArray = null;
+                if(jsonObject.has(JSON_CATEGORIES)){
+                    categoryArray = jsonObject.getJSONArray(JSON_CATEGORIES);
+                    JSONArray newCategoryList = new JSONArray();
+                    int len = categoryArray.length();
+                    for (int i=0;i<len;i++)
+                    {
+                        String temp = categoryArray.getString(i);
+                        //Excluding the item at position
+                        if (!temp.equals(category))
+                        {
+                            newCategoryList.put(temp);
+                        }
+                    }
+
+                    //delete musics by category
+                    JSONArray musicArray = null;
+                    if(jsonObject.has(JSON_MUSIC)) {
+                        musicArray = jsonObject.getJSONArray(JSON_MUSIC);
+                        JSONArray newMusicList = new JSONArray();
+                        int lenMusic = musicArray.length();
+                        for (int i = 0; i < lenMusic; i++) {
+                            JSONObject temp = musicArray.getJSONObject(i);
+                            String tempGENRE = temp.getString(JSON_GENRE);
+                            //Excluding the item at position
+                            if (!tempGENRE.equals(category)) {
+                                newMusicList.put(musicArray.get(i));
+                            }
+                        }
+                        jsonObject.put(JSON_MUSIC, newMusicList);
+                    }
+
+                    jsonObject.put(JSON_CATEGORIES, newCategoryList);
+                    writeJSON(jsonObject);
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void deleteMusic(MediaMetadataCompat mediaMetadata){
         JSONObject jsonObject = null;
         try {
             jsonObject = readJSON();
-            if (jsonObject == null) {
-                jsonObject = new JSONObject();
-            }
-            JSONArray musicArray = null;
-            if(jsonObject.has(JSON_MUSIC)){
-                musicArray = jsonObject.getJSONArray(JSON_MUSIC);
-            }else{
-                musicArray = new JSONArray();
-            }
+            if (jsonObject != null) {
+                JSONArray musicArray = null;
+                if(jsonObject.has(JSON_MUSIC)) {
+                    musicArray = jsonObject.getJSONArray(JSON_MUSIC);
+                    JSONArray newMusicList = new JSONArray();
+                    int len = musicArray.length();
+                    for (int i = 0; i < len; i++) {
+                        JSONObject temp = musicArray.getJSONObject(i);
+                        String tempSource = temp.getString(JSON_SOURCE);
+                        String deletedSource = mediaMetadata.getString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE);
+                        //Excluding the item at position
+                        if (!tempSource.equals(deletedSource)) {
+                            newMusicList.put(musicArray.get(i));
+                        }
+                    }
 
-            JSONArray newMusicList = new JSONArray();
-            int len = musicArray.length();
-            for (int i=0;i<len;i++)
-            {
-                JSONObject temp = musicArray.getJSONObject(i);
-                String tempSource = temp.getString(JSON_SOURCE);
-                String deletedSource = mediaMetadata.getString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE);
-                //Excluding the item at position
-                if (!tempSource.equals(deletedSource))
-                {
-                    newMusicList.put(musicArray.get(i));
+                    jsonObject.put(JSON_MUSIC, newMusicList);
+                    writeJSON(jsonObject);
                 }
             }
-
-            jsonObject.put(JSON_MUSIC, newMusicList);
-            writeJSON(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
         }
