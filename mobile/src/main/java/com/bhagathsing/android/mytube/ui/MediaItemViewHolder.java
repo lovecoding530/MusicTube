@@ -168,9 +168,12 @@ public class MediaItemViewHolder {
             holder.mFavButton.setVisibility(View.INVISIBLE);
         }
         String mediaId = MediaIDHelper.extractMusicIDFromMediaID(item.getMediaId());
-        if(mediaId == null)
-            convertView.setBackgroundColor(colors[position%8]);
-
+        holder.mTitleView.setTextSize(20.0f);
+        if(mediaId == null) {
+            if(position == 0)
+                holder.mTitleView.setTextSize(25.0f);
+            convertView.setBackgroundColor(colors[position % 8]);
+        }
         return convertView;
     }
 

@@ -74,6 +74,19 @@ public class SearchableActivity extends BaseActivity
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        for (String key: MusicProvider.mMusicListById.keySet()){
+            MediaMetadataCompat metadataCompat = MusicProvider.mMusicListById.get(key).metadata;
+            String genre = metadataCompat.getString(MediaMetadataCompat.METADATA_KEY_GENRE);
+            if(genre.equals("Search_" + query)){
+                MusicProvider.mMusicListById.remove(key);
+            }
+            MusicProvider.mMusicListByGenre.remove("Search_" + query);
+        }
+    }
+
     private static final String FRAGMENT_TAG = "uamp_list_container";
 
     private void navigateToBrowser(String mediaId) {
