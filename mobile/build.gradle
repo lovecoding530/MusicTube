@@ -30,8 +30,8 @@ android {
         applicationId "com.bhagathsing.android.mytube"
         minSdkVersion 17
         targetSdkVersion 26
-        versionCode 10008
-        versionName "1.0.8"
+        versionCode 20000
+        versionName "2.0.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
     }
