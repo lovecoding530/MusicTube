@@ -30,6 +30,7 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AlertDialog;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -172,11 +173,17 @@ public class MediaItemViewHolder {
         if(mediaId == null) {
             convertView.setBackgroundColor(colors[position % 8]);
             if(position == 0) {
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                activity.getWindowManager()
+                        .getDefaultDisplay()
+                        .getMetrics(displayMetrics);
+                int width = displayMetrics.widthPixels;
                 ViewGroup.LayoutParams params = convertView.getLayoutParams();
-                params.height = params.height * 3;
+                params.height = (int) (width/502f*206f);
                 convertView.setBackgroundColor(0xff932974);
-                holder.mImageView.setVisibility(View.INVISIBLE);
-                holder.mTitleView.setTextColor(0xffffffff);
+                holder.mImageView.setVisibility(View.GONE);
+                holder.mTitleView.setVisibility(View.GONE);
+                convertView.setBackground(ContextCompat.getDrawable(activity,R.drawable.new_recent));
             }
         }
         return convertView;
