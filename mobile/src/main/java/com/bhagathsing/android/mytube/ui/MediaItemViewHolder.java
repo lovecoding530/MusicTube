@@ -71,7 +71,7 @@ public class MediaItemViewHolder {
             0xffb0e2ff,
             0xff7fffd4,
             0xffc1ffc1,
-            0xffff3030,
+            0xaaff3030,
             0xff66cdaa,
             0xfffbceb1
     };
