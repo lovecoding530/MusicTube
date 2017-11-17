@@ -83,8 +83,8 @@ public class SearchableActivity extends BaseActivity
             if(genre.equals("Search_" + query)){
                 MusicProvider.mMusicListById.remove(key);
             }
-            MusicProvider.mMusicListByGenre.remove("Search_" + query);
         }
+        MusicProvider.mMusicListByGenre.remove("Search_" + query);
     }
 
     private static final String FRAGMENT_TAG = "uamp_list_container";

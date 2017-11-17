@@ -237,15 +237,19 @@ public class MytubeSource implements MusicProviderSource {
     }
 
     public static void insertMusic(String category, MediaMetadataCompat mediaMetadata){
+        String musicId = mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID);
         String source = mediaMetadata.getString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE);
+        String album = mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM);
+        Long duration = mediaMetadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION);
+        String title = mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
         if(MusicProvider.searchMusicInCategory(category, source) == null){
             JSONObject jsonMediaObject = new JSONObject();
             try {
-                jsonMediaObject.put(JSON_TITLE, mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE));
-                jsonMediaObject.put(JSON_ALBUM, mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_ALBUM));
+                jsonMediaObject.put(JSON_TITLE, title);
+                jsonMediaObject.put(JSON_ALBUM, album);
                 jsonMediaObject.put(JSON_GENRE, category);
-                jsonMediaObject.put(JSON_SOURCE, mediaMetadata.getString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE));
-                jsonMediaObject.put(JSON_DURATION, mediaMetadata.getLong(MediaMetadataCompat.METADATA_KEY_DURATION)/1000);
+                jsonMediaObject.put(JSON_SOURCE, source);
+                jsonMediaObject.put(JSON_DURATION, duration/1000);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -269,14 +273,21 @@ public class MytubeSource implements MusicProviderSource {
                 e.printStackTrace();
             }
 
-            String musicId = mediaMetadata.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID);
-            MusicProvider.mMusicListById.put(musicId, new MutableMediaMetadata(musicId, mediaMetadata));
+            MediaMetadataCompat newMetadata = new MediaMetadataCompat.Builder()
+                    .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, musicId)
+                    .putString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE, source)
+                    .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, album)
+                    .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration)
+                    .putString(MediaMetadataCompat.METADATA_KEY_GENRE, category)
+                    .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
+                    .build();
+            MusicProvider.mMusicListById.put(musicId, new MutableMediaMetadata(musicId, newMetadata));
             List<MediaMetadataCompat> list = MusicProvider.mMusicListByGenre.get(category);
             if (list == null) {
                 list = new ArrayList<>();
                 MusicProvider.mMusicListByGenre.put(category, list);
             }
-            list.add(0, mediaMetadata);
+            list.add(0, newMetadata);
         }
     }
 
