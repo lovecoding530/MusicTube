@@ -170,11 +170,14 @@ public class MediaItemViewHolder {
         String mediaId = MediaIDHelper.extractMusicIDFromMediaID(item.getMediaId());
         holder.mTitleView.setTextSize(20.0f);
         if(mediaId == null) {
+            convertView.setBackgroundColor(colors[position % 8]);
             if(position == 0) {
                 ViewGroup.LayoutParams params = convertView.getLayoutParams();
                 params.height = params.height * 3;
+                convertView.setBackgroundColor(0xff932974);
+                holder.mImageView.setVisibility(View.INVISIBLE);
+                holder.mTitleView.setTextColor(0xffffffff);
             }
-            convertView.setBackgroundColor(colors[position % 8]);
         }
         return convertView;
     }
