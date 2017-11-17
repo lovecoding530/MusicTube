@@ -170,8 +170,10 @@ public class MediaItemViewHolder {
         String mediaId = MediaIDHelper.extractMusicIDFromMediaID(item.getMediaId());
         holder.mTitleView.setTextSize(20.0f);
         if(mediaId == null) {
-            if(position == 0)
-                holder.mTitleView.setTextSize(25.0f);
+            if(position == 0) {
+                ViewGroup.LayoutParams params = convertView.getLayoutParams();
+                params.height = params.height * 3;
+            }
             convertView.setBackgroundColor(colors[position % 8]);
         }
         return convertView;
