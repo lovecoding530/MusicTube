@@ -418,7 +418,7 @@ public class MediaBrowserFragment extends Fragment {
         public View getView(int position, View convertView, @NonNull ViewGroup parent) {
             MediaBrowserCompat.MediaItem item = getItem(position);
             return MediaItemViewHolder.setupListView((Activity) getContext(), convertView, parent,
-                    item);
+                    item, position);
         }
     }
 

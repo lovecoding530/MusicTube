@@ -19,6 +19,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
@@ -63,9 +64,19 @@ public class MediaItemViewHolder {
     private TextView mDescriptionView;
     private ImageButton mFavButton;
 
+    private static int[] colors = {
+            0xffbfefff,
+            0xffffb6c1,
+            0xffb0e2ff,
+            0xff7fffd4,
+            0xffc1ffc1,
+            0xffff3030,
+            0xff66cdaa,
+            0xfffbceb1
+    };
     // Returns a view for use in media item list.
     static View setupListView(final Activity activity, View convertView, ViewGroup parent,
-                              final MediaBrowserCompat.MediaItem item) {
+                              final MediaBrowserCompat.MediaItem item, int position) {
 
         if (sColorStateNotPlaying == null || sColorStatePlaying == null) {
             initializeColorStateLists(activity);
@@ -88,8 +99,6 @@ public class MediaItemViewHolder {
             holder = (MediaItemViewHolder) convertView.getTag();
             cachedState = (Integer) convertView.getTag(R.id.tag_mediaitem_state_cache);
         }
-
-
 
         MediaDescriptionCompat description = item.getDescription();
         holder.mTitleView.setText(description.getTitle());
@@ -150,7 +159,7 @@ public class MediaItemViewHolder {
             }
             else {
 //                holder.mImageView.setVisibility(View.GONE);
-                holder.mImageView.setImageResource(R.drawable.apple_music);
+                holder.mImageView.setImageResource(R.drawable.music);
             }
             convertView.setTag(R.id.tag_mediaitem_state_cache, state);
         }
@@ -158,6 +167,9 @@ public class MediaItemViewHolder {
         if(activity.getClass() != SearchableActivity.class){
             holder.mFavButton.setVisibility(View.INVISIBLE);
         }
+        String mediaId = MediaIDHelper.extractMusicIDFromMediaID(item.getMediaId());
+        if(mediaId == null)
+            convertView.setBackgroundColor(colors[position%8]);
 
         return convertView;
     }
