@@ -268,7 +268,7 @@ public final class LocalPlayback implements Playback {
                                 YtFile ytFile = ytFiles.get(itag);
 
                                 // Just add videos in a decent format => height -1 = audio
-                                if (ytFile.getFormat().getHeight() == -1) {
+                                if (ytFile.getFormat() != null && ytFile.getFormat().getHeight() == -1) {
                                     downloadUrl = ytFile.getUrl();
                                 }
                             }
