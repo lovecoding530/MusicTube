@@ -183,6 +183,9 @@ public class MusicProvider {
         if (mCurrentState != State.INITIALIZED) {
             return null;
         }
+        if(mMusicListByGenre.get(category) == null){
+            return null;
+        }
         MediaMetadataCompat result = null;
         for (MediaMetadataCompat track : mMusicListByGenre.get(category)) {
             if (track.getString(MusicProviderSource.CUSTOM_METADATA_TRACK_SOURCE).equals(source)) {
