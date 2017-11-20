@@ -109,8 +109,11 @@ public class MusicPlayerActivity extends BaseActivity
             }else{
                 Log.e("Permission error","You have asked for permission");
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-                return;
             }
+        }else{
+            MytubeSource.jsonFile.getParentFile().mkdirs();
+            MytubeSource.insertCategory(NEW_RECENTLY_SONGS);
+            MytubeSource.insertCategory(My_FAVORITE);
         }
     }
 

@@ -190,10 +190,10 @@ public class MediaBrowserFragment extends Fragment {
         addfab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(MediaBrowserFragment.this.getContext());
+            AlertDialog.Builder builder = new AlertDialog.Builder(MediaBrowserFragment.this.getActivity());
             builder.setTitle("Create category");
 
-            final EditText input = new EditText(MediaBrowserFragment.this.getContext());
+            final EditText input = new EditText(MediaBrowserFragment.this.getActivity());
             input.setTextColor(Color.WHITE);
             input.setInputType(InputType.TYPE_CLASS_TEXT);
             builder.setView(input);
