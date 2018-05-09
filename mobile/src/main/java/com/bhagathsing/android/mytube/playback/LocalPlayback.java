@@ -260,6 +260,7 @@ public final class LocalPlayback implements Playback {
                 new YouTubeExtractor(MyApplication.getAppContext()) {
                     @Override
                     public void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta vMeta) {
+                        Log.d("Kangtle", "onExtractionComplete");
                         if (ytFiles != null) {
                             String downloadUrl = "";
                             for (int i = 0, itag; i < ytFiles.size(); i++) {
@@ -272,7 +273,7 @@ public final class LocalPlayback implements Playback {
                                     downloadUrl = ytFile.getUrl();
                                 }
                             }
-                            Log.d("Kangtle", downloadUrl);
+                            Log.d("Kangtle", "downloadUrl " + downloadUrl);
 
                             MediaSource mediaSource =
                                     new ExtractorMediaSource(
@@ -281,6 +282,8 @@ public final class LocalPlayback implements Playback {
                             // Prepares media to play (happens on background thread) and triggers
                             // {@code onPlayerStateChanged} callback when the stream is ready to play.
                             mExoPlayer.prepare(mediaSource);
+                        }else{
+                            Log.d("Kangtle", "ytFiles is null");
                         }
                     }
                 }.extract(source, true, false);
